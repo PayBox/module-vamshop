@@ -1,0 +1,19 @@
+#: /plugins/payment/views/admin/paybox.ctp
+msgid "Merchant id"
+msgstr "Номер магазина (merchant_id)"
+
+#: /plugins/payment/views/admin/paybox.ctp
+msgid "Secret key"
+msgstr "Секретный ключ (secret_key)"
+
+#: /plugins/payment/views/admin/paybox.ctp
+msgid "Secret key"
+msgstr "Секретный ключ (secret_key)"
+
+#: /plugins/payment/views/admin/paybox.ctp
+msgid "Life time"
+msgstr "Время жизни счета в минутах"
+
+#: /plugins/payment/views/admin/paybox.ctp
+msgid "Demo mode"
+msgstr "Тестовый режим"
