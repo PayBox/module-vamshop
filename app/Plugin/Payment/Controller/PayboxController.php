@@ -1,4 +1,4 @@
-<?php 
+<?php
 /* -----------------------------------------------------------------------------------------
    VamShop - http://vamshop.com
    -----------------------------------------------------------------------------------------
@@ -38,11 +38,11 @@ class PayboxController extends PaymentAppController {
 		$new_module['PaymentMethodValue'][2]['payment_method_id'] = $this->PaymentMethod->id;
 		$new_module['PaymentMethodValue'][2]['key'] = 'lifetime';
 		$new_module['PaymentMethodValue'][2]['value'] = '';
-		
+
 		$new_module['PaymentMethodValue'][3]['payment_method_id'] = $this->PaymentMethod->id;
 		$new_module['PaymentMethodValue'][3]['key'] = 'testmode';
 		$new_module['PaymentMethodValue'][3]['value'] = '';
-		
+
 		$this->PaymentMethod->saveAll($new_module);
 
 		$this->Session->setFlash(__('Module Installed'));
@@ -55,21 +55,21 @@ class PayboxController extends PaymentAppController {
 		$module_id = $this->PaymentMethod->findByAlias($this->module_name);
 
 		$this->PaymentMethod->delete($module_id['PaymentMethod']['id'], true);
-			
+
 		$this->Session->setFlash(__('Module Uninstalled'));
 		$this->redirect('/payment_methods/admin/');
 	}
 
-	public function before_process () 
+	public function before_process ()
 	{
 		global $config;
 
 		$order = $this->Order->read(null,$_SESSION['Customer']['order_id']);
-		
+
 		$strCurrency = $_SESSION['Customer']['currency_code'];
 		if($strCurrency == 'RUR')
 			$strCurrency = 'RUB';
-		
+
 		$strDescription = '';
 		foreach($order['OrderProduct'] as $arrProduct){
 			$strDescription .= $arrProduct['name'];
@@ -86,7 +86,7 @@ class PayboxController extends PaymentAppController {
 		$strCallBack = 'http://'.$_SERVER['HTTP_HOST'] .  BASE . '/payment/paybox/result/index.php';
 		$strSuccessUrl = 'http://'.$_SERVER['HTTP_HOST'] .  BASE . '/orders/place_order/';
 		$strFailUrl = 'http://'.$_SERVER['HTTP_HOST'] .  BASE . '/page/checkout' . $config['URL_EXTENSION'];
-		
+
 		$arrFields = array(
 			'pg_merchant_id'		=> $nMerchant_id,
 			'pg_order_id'			=> $_SESSION['Customer']['order_id'],
@@ -111,24 +111,24 @@ class PayboxController extends PaymentAppController {
 			if(!empty($strPhone))
 				$arrFields['pg_user_phone'] = $strPhone;
 		}
-		
+
 		if(!empty($order['Order']['email'])){
 			$arrFields['pg_user_email'] = $order['Order']['email'];
 			$arrFields['pg_user_contact_email'] = $order['Order']['email'];
 		}
-		
+
 		$arrSecretKey = $this->PaymentMethod->PaymentMethodValue->find('first', array('conditions' => array('key' => 'secret_key')));
 		$arrFields['pg_sig'] = PG_Signature::make('payment.php', $arrFields, $arrSecretKey['PaymentMethodValue']['value']);
-		
-		$strContent = "<form id='contentform' action='http://www.paybox.kz/payment.php' method='get'>";
+
+		$strContent = "<form id='contentform' action='https://api.paybox.money/payment.php' method='get'>";
 		foreach($arrFields as $strName => $strValue){
 			$strContent .= "<input type='hidden' name='$strName' value='$strValue'>";
 		}
 		$strContent .= '<input type="submit" value="{lang}Process to Payment{/lang}"></form>';
-		
+
 		foreach($_POST AS $key => $value)
 			$order['Order'][$key] = $value;
-		
+
 		// Get the default order status
 		$default_status = $this->Order->OrderStatus->find('first', array('conditions' => array('default' => '1')));
 		$order['Order']['order_status_id'] = $default_status['OrderStatus']['id'];
@@ -142,12 +142,12 @@ class PayboxController extends PaymentAppController {
 	public function after_process()
 	{
 	}
-	
-	
+
+
 	public function result()
 	{
 		$arrRequest = array();
-		if(!empty($_POST)) 
+		if(!empty($_POST))
 			$arrRequest = $_POST;
 		else
 			$arrRequest = $_GET;
@@ -156,13 +156,13 @@ class PayboxController extends PaymentAppController {
 		$thisScriptName = PG_Signature::getOurScriptName();
 		if (empty($arrRequest['pg_sig']) || !PG_Signature::check($arrRequest['pg_sig'], $thisScriptName, $arrRequest, $arrSecretKey['PaymentMethodValue']['value']))
 			die("Wrong signature");
-		
+
 		$order = $this->Order->read(null,$arrRequest['pg_order_id']);
-		
+
 		if(!isset($arrRequest['pg_result'])){
 			$bCheckResult = 0;
 			if(empty($order))
-				$error_desc = "Товар не доступен.";	
+				$error_desc = "Товар не доступен.";
 			elseif($arrRequest['pg_amount'] != number_format($order["Order"]['total'], 2, '.', ''))
 				$error_desc = "Неверная сумма";
 			else
@@ -183,7 +183,7 @@ class PayboxController extends PaymentAppController {
 		else{
 			$bResult = 0;
 			if(empty($order))
-				$strResponseDescription = "Товар не доступен.";		
+				$strResponseDescription = "Товар не доступен.";
 			elseif($arrRequest['pg_amount'] != number_format($order["Order"]['total'], 2, '.', ''))
 				$strResponseDescription = "Неверная сумма";
 			else {
@@ -215,7 +215,7 @@ class PayboxController extends PaymentAppController {
 		echo $objResponse->asXML();
 		die();
 	}
-	
+
 }
 
 ?>
